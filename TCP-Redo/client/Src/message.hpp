@@ -7,9 +7,9 @@
 
 using namespace std;
 
-#define RECIEVE_BUFFER_SIZE 2000
-#define SEND_BUFFER_SIZE 2000
-#define SHORT_MESSAGE_LEN 200
+#define RECIEVE_BUFFER_SIZE 2048
+#define SEND_BUFFER_SIZE 2048
+#define SHORT_MESSAGE_LEN 256
 #define DATA_LEN 1400
 
 vector <string> valid_message = {
@@ -22,22 +22,30 @@ vector <string> valid_message = {
 };
 
 
+#pragma pack(push, 1)
 struct short_message {
     int len;
     char content[SHORT_MESSAGE_LEN];
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct data_message {
     int len;
     char content[DATA_LEN];
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct start_file_transfer {
     unsigned long long file_size;
     int len;
     char filename[SHORT_MESSAGE_LEN];
 };
 
+#pragma pack(pop)
+
+#pragma pack(push, 1)
 struct start_chunk_transfer {
     unsigned long long file_size;
     unsigned long long offset;
@@ -45,7 +53,7 @@ struct start_chunk_transfer {
     int len;
     char filename[SHORT_MESSAGE_LEN];
 };
-
+#pragma pack(pop)
 
 
 string get_content_short(const short_message& mess) {
@@ -79,13 +87,36 @@ bool copy_buffer_to_message(char* buffer, int size, T& target) {
 }
 
 template <typename T>
-int send(T& data, SOCKET& server, const string& error_message) {
-    int res = send(server, reinterpret_cast<char*>(&data), sizeof(T), 0);
-    if (res == SOCKET_ERROR) {
-        std::cerr << "Cannot send data: " + error_message << '\n';
-        return -1;
+int send(T& data, SOCKET& server, const std::string& error_message) {
+    int total = sizeof(T);  // Total size of the structure in bytes
+    int res = 0;            // Number of bytes successfully sent
+    int numRetries = 0;     // Retry counter
+    int maxRetries = 5;     // Maximum number of retries
+
+    while (res < total) {
+        int tmp = ::send(server, reinterpret_cast<char*>(&data) + res, total - res, 0);
+        
+        if (tmp == SOCKET_ERROR) {
+            int errCode = WSAGetLastError();
+            std::cerr << "Cannot send data: " + error_message + ", Error code: " << errCode << '\n';
+
+            if (errCode == WSAEWOULDBLOCK || errCode == WSAENOBUFS) {
+                if (numRetries >= maxRetries) {
+                    std::cerr << "Max retries reached, giving up.\n";
+                    return SOCKET_ERROR; // Or handle according to your use case
+                }
+                numRetries++;
+                Sleep(100); // Optional: wait a bit before retrying
+                continue;
+            } else {
+                return SOCKET_ERROR;
+            }
+        }
+
+        res += tmp; // Successfully sent some bytes
     }
-    return res;
+
+    return res; // Return the number of bytes successfully sent
 }
 
 template <typename T>
@@ -95,7 +126,20 @@ int recv(T& data, SOCKET& server, const string& error_message) {
     int res = 0;
     int sizeR = sizeof(T);
     while (res < sizeR) {
-        res += recv(server, buffer + res, sizeR - res, 0);
+        int bytesReceived = ::recv(server, buffer + res, sizeR - res, 0);
+        
+        if (bytesReceived == SOCKET_ERROR) {
+            int errCode = WSAGetLastError();
+            std::cerr << "Cannot receive data: " + error_message + ", Error code: " << errCode << '\n';
+            return -1;
+        }
+
+        if (bytesReceived == 0) {
+            std::cerr << "Connection closed unexpectedly: " + error_message << '\n';
+            return -1;
+        }
+
+        res += bytesReceived;
     }
 
 
