@@ -292,22 +292,31 @@ void serve_chunk(SOCKET client_socket);
 
 #### **Message Structs**
 ```c++
+
+#pragma pack(push, 1)
 struct short_message {
     int len;
     char content[SHORT_MESSAGE_LEN];
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct data_message {
     int len;
     char content[DATA_LEN];
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct start_file_transfer {
     unsigned long long file_size;
     int len;
     char filename[SHORT_MESSAGE_LEN];
 };
 
+#pragma pack(pop)
+
+#pragma pack(push, 1)
 struct start_chunk_transfer {
     unsigned long long file_size;
     unsigned long long offset;
@@ -315,8 +324,9 @@ struct start_chunk_transfer {
     int len;
     char filename[SHORT_MESSAGE_LEN];
 };
+#pragma pack(pop)
 ```
-- **Description**: Fixed-size message frames used for communication between the client and server. Each struct includes a buffer and length field to manage the message content.
+- **Description**: Fixed-size message frames used for communication between the client and server. Each struct includes a buffer and length field to manage the message content. The pragma directives ensure that the structs are packed tightly. For dealing with alignment issues, the `#pragma pack` directives are used to pack the structs tightly without padding.
 
 #### **3.3.1. `get_content_short`**
 ```c++
@@ -347,7 +357,7 @@ int send(T& data, SOCKET& server, const string& error_message);
 template <typename T>
 int recv(T& data, SOCKET& server, const string& error_message);
 ```
-- **Description**: Templated functions for sending and receiving structured messages.
+- **Description**: Templated functions for sending and receiving structured messages. These functions ensure the data is fully transmitted and received without loss.
 
 #### **3.3.5. `is_valid_message`**
 ```c++

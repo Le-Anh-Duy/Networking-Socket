@@ -38,8 +38,14 @@ void handle_client(SOCKET client_socket, int clientId)
 
     // only short message allowed here
     short_message wellcome = make_short_message(message);
-    char* data = reinterpret_cast<char*>(&wellcome);
-    if (send(client_socket, data, sizeof(short_message), 0) == SOCKET_ERROR) {
+    // char* data = reinterpret_cast<char*>(&wellcome);
+    // if (send(client_socket, data, sizeof(short_message), 0) == SOCKET_ERROR) {
+    //     std::cout << "Failed to send message: " << WSAGetLastError() << std::endl;
+    //     return;
+    // }
+    
+    int bsend = send(wellcome, client_socket, "server send");
+    if (bsend < 0) {
         std::cout << "Failed to send message: " << WSAGetLastError() << std::endl;
         return;
     }
@@ -47,16 +53,17 @@ void handle_client(SOCKET client_socket, int clientId)
     while (true)
     {
         // only short message allowed here
-        receive_message_size = recv(client_socket, buffer, RECIEVE_BUFFER_SIZE, 0);
-        if (receive_message_size < 0) {
-            std::cerr << "Error receiving data\n";
-            break;
-        }
+        // receive_message_size = recv(client_socket, buffer, RECIEVE_BUFFER_SIZE, 0);
+        // if (receive_message_size < 0) {
+        //     std::cerr << "Error receiving data\n";
+        //     break;
+        // }
 
         short_message req;
-        bool ok = copy_buffer_to_message(buffer, receive_message_size, req);
+        int receive_message_size = recv(req, client_socket, "server receive");
+        // bool ok = copy_buffer_to_message(buffer, receive_message_size, req);
 
-        if (!ok) continue;
+        if (receive_message_size < 0) continue;
         string cont = get_content_short(req);
         if (!is_valid_message(cont)) continue;
 

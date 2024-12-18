@@ -25,7 +25,8 @@ public:
         
         short_message quit = make_short_message("QUIT");
         if (socketHandle != INVALID_SOCKET) {
-            send(socketHandle, reinterpret_cast<char*>(&quit), sizeof(short_message), 0);
+            send(quit, socketHandle, "quit");
+            // send(socketHandle, reinterpret_cast<char*>(&quit), sizeof(short_message), 0);
             closesocket(socketHandle);
         }
         WSACleanup();

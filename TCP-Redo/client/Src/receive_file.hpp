@@ -73,7 +73,11 @@ void recieve_file(SOCKET server, const string& filename, const string& rename, o
 
 void get_file_list(SOCKET server, ofstream& lout, clientUI& ui) {
     short_message getlist = make_short_message("GET_LIST");
-    if (send(server, reinterpret_cast<char*>(&getlist), sizeof(short_message), 0) == SOCKET_ERROR) {
+    // if (send(server, reinterpret_cast<char*>(&getlist), sizeof(short_message), 0) == SOCKET_ERROR) {
+    //     throw runtime_error("Cannot get List\n");
+    // }
+
+    if (send(getlist, server, "get list") < 0) {
         throw runtime_error("Cannot get List\n");
     }
 
@@ -188,19 +192,19 @@ void Worker::run() {
     char sendBuffer[SEND_BUFFER_SIZE];
 
     
-    int bytesReceived = recv(socketHandle, buffer, RECIEVE_BUFFER_SIZE, 0);
+    // int bytesReceived = recv(socketHandle, buffer, RECIEVE_BUFFER_SIZE, 0);
     
-    if (bytesReceived == SOCKET_ERROR) {
-        throw std::runtime_error("Failed to receive message: " + std::to_string(WSAGetLastError()));
-    }   
+    // if (bytesReceived == SOCKET_ERROR) {
+    //     throw std::runtime_error("Failed to receive message: " + std::to_string(WSAGetLastError()));
+    // }   
 
-    if (bytesReceived != sizeof(short_message)) {
-        throw std::runtime_error("fail protocol");
-    }
+    // if (bytesReceived != sizeof(short_message)) {
+    //     throw std::runtime_error("fail protocol");
+    // }
 
     short_message wellcome;
-    bool ok = copy_buffer_to_message(buffer, bytesReceived, wellcome);
-    if (!ok) {        
+    int ok = recv(wellcome, socketHandle, "get server wellcome");
+    if (ok < 0) {
         throw std::runtime_error("not ok get server wellcome");
     }
 }

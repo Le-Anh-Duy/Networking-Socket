@@ -57,7 +57,7 @@ public:
         
         short_message quit = make_short_message("QUIT");
         if (socketHandle != INVALID_SOCKET) {
-            send(socketHandle, reinterpret_cast<char*>(&quit), sizeof(short_message), 0);
+            send(quit, socketHandle, "quit");
             closesocket(socketHandle);
         }
         WSACleanup();
@@ -93,19 +93,24 @@ public:
         char sendBuffer[SEND_BUFFER_SIZE];
 
         
-        int bytesReceived = recv(socketHandle, buffer, RECIEVE_BUFFER_SIZE, 0);
+        // int bytesReceived = recv(socketHandle, buffer, RECIEVE_BUFFER_SIZE, 0);
         
-        if (bytesReceived == SOCKET_ERROR) {
-            throw std::runtime_error("Failed to receive message: " + std::to_string(WSAGetLastError()));
-        }   
+        // if (bytesReceived == SOCKET_ERROR) {
+        //     throw std::runtime_error("Failed to receive message: " + std::to_string(WSAGetLastError()));
+        // }   
 
-        if (bytesReceived != sizeof(short_message)) {
-            throw std::runtime_error("fail protocol");
-        }
+        // if (bytesReceived != sizeof(short_message)) {
+        //     throw std::runtime_error("fail protocol");
+        // }
 
         short_message wellcome;
-        bool ok = copy_buffer_to_message(buffer, bytesReceived, wellcome);
-        if (!ok) {
+        // bool ok = copy_buffer_to_message(buffer, bytesReceived, wellcome);
+        // if (!ok) {
+        //     throw std::runtime_error("not ok get server wellcome");
+        // }
+        
+        int ok = recv(wellcome, socketHandle, "get server wellcome");
+        if (ok < 0) {
             throw std::runtime_error("not ok get server wellcome");
         }
         

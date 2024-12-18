@@ -25,20 +25,32 @@ void serve_file(SOCKET client_socket, const string& filename, const string& show
     strcpy(start_sending.filename, showname.c_str());
 
     std::cout << "starting to send....\n";
-    if (send(client_socket, reinterpret_cast<char*>(&start_sending), sizeof(start_file_transfer), 0) == SOCKET_ERROR) {
+    // if (send(client_socket, reinterpret_cast<char*>(&start_sending), sizeof(start_file_transfer), 0) == SOCKET_ERROR) {
+    //     std::cout << "Failed to send message: " + std::to_string(WSAGetLastError()) << '\n';
+    //     return;
+    // }
+
+    if (send(start_sending, client_socket, "server_send") < 0) {
         std::cout << "Failed to send message: " + std::to_string(WSAGetLastError()) << '\n';
         return;
     }
+
     std::cout << "done send....\n";
 
-    int rByte = recv(client_socket, buffer, RECIEVE_BUFFER_SIZE, 0);
+    // int rByte = recv(client_socket, buffer, RECIEVE_BUFFER_SIZE, 0);
+    // if (rByte < 0) {
+    //     std::cout << "Failed to recv message: " + std::to_string(WSAGetLastError()) << '\n';
+    //     return;
+    // }
+
+
+    short_message acc;
+
+    int rByte = recv(acc, client_socket, "cannot get the requirment");
     if (rByte < 0) {
         std::cout << "Failed to recv message: " + std::to_string(WSAGetLastError()) << '\n';
         return;
     }
-
-    short_message acc;
-    copy_buffer_to_message(buffer, rByte, acc);
 
     if (!is_valid_message(get_content_short(acc)) || get_content_short(acc) != "OK") {
         std::cout << "Failed to accept message: " + std::to_string(WSAGetLastError()) << '\n';
@@ -57,8 +69,13 @@ void serve_file(SOCKET client_socket, const string& filename, const string& show
         send_data.len = next;
         fi.read(send_data.content, next);
 
-        if (send(client_socket, reinterpret_cast<char*>(&send_data), sizeof(data_message), 0) == SOCKET_ERROR) {
+        // if (send(client_socket, reinterpret_cast<char*>(&send_data), sizeof(data_message), 0) == SOCKET_ERROR) {
             
+        //     std::cout << "Failed to send message: " + std::to_string(WSAGetLastError()) << '\n';
+        //     return;
+        // }
+
+        if (send(send_data, client_socket, "fail to send") < 0) {
             std::cout << "Failed to send message: " + std::to_string(WSAGetLastError()) << '\n';
             return;
         }
