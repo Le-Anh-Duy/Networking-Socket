@@ -131,6 +131,7 @@ int recv(T& data, SOCKET& server, const string& error_message) {
         if (bytesReceived == SOCKET_ERROR) {
             int errCode = WSAGetLastError();
             std::cerr << "Cannot receive data: " + error_message + ", Error code: " << errCode << '\n';
+            if (errCode == 10054) return -2;
             return -1;
         }
 

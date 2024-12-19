@@ -62,7 +62,11 @@ void handle_client(SOCKET client_socket, int clientId)
         short_message req;
         int receive_message_size = recv(req, client_socket, "server receive");
         // bool ok = copy_buffer_to_message(buffer, receive_message_size, req);
-
+        if (receive_message_size == -2) {
+            std::cout << "Client " << clientId << " disconnected\n";
+            break;
+        }
+        
         if (receive_message_size < 0) continue;
         string cont = get_content_short(req);
         if (!is_valid_message(cont)) continue;
