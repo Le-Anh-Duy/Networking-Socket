@@ -17,7 +17,7 @@ void serve_file(SOCKET client_socket, const string& filename, const string& show
     char sendBuffer[SEND_BUFFER_SIZE];
     
     std::ifstream fi(filename, std::ios::binary | std::ios::ate); // Open in binary mode and move to end of file
-    int tmpS = fi.tellg(), cur = 0;
+    unsigned long long tmpS = fi.tellg(), cur = 0;
 
     start_file_transfer start_sending;
     start_sending.file_size = tmpS; 
@@ -25,7 +25,7 @@ void serve_file(SOCKET client_socket, const string& filename, const string& show
     strcpy(start_sending.filename, showname.c_str());
 
     std::cout << "starting to send....\n";
-    // if (send(client_socket, reinterpret_cast<char*>(&start_sending), sizeof(start_file_transfer), 0) == SOCKET_ERROR) {
+    // if (send(client_socket, reunsigned long longerpret_cast<char*>(&start_sending), sizeof(start_file_transfer), 0) == SOCKET_ERROR) {
     //     std::cout << "Failed to send message: " + std::to_string(WSAGetLastError()) << '\n';
     //     return;
     // }
@@ -37,7 +37,7 @@ void serve_file(SOCKET client_socket, const string& filename, const string& show
 
     std::cout << "done send....\n";
 
-    // int rByte = recv(client_socket, buffer, RECIEVE_BUFFER_SIZE, 0);
+    // unsigned long long rByte = recv(client_socket, buffer, RECIEVE_BUFFER_SIZE, 0);
     // if (rByte < 0) {
     //     std::cout << "Failed to recv message: " + std::to_string(WSAGetLastError()) << '\n';
     //     return;
@@ -46,7 +46,7 @@ void serve_file(SOCKET client_socket, const string& filename, const string& show
 
     short_message acc;
 
-    int rByte = recv(acc, client_socket, "cannot get the requirment");
+    unsigned long long rByte = recv(acc, client_socket, "cannot get the requirment");
     if (rByte < 0) {
         std::cout << "Failed to recv message: " + std::to_string(WSAGetLastError()) << '\n';
         return;
@@ -63,13 +63,13 @@ void serve_file(SOCKET client_socket, const string& filename, const string& show
 
     fi.seekg(ios::beg);
     while (cur < tmpS) {
-        int next = DATA_LEN;
+        unsigned long long next = DATA_LEN;
         if (cur + next > tmpS) next = tmpS - cur;
 
         send_data.len = next;
         fi.read(send_data.content, next);
 
-        // if (send(client_socket, reinterpret_cast<char*>(&send_data), sizeof(data_message), 0) == SOCKET_ERROR) {
+        // if (send(client_socket, reunsigned long longerpret_cast<char*>(&send_data), sizeof(data_message), 0) == SOCKET_ERROR) {
             
         //     std::cout << "Failed to send message: " + std::to_string(WSAGetLastError()) << '\n';
         //     return;
@@ -122,7 +122,7 @@ void check_file_to_download(SOCKET client_socket) {
     std::cout << "server hello sent\n";
 
     start_file_transfer target;
-    int rbyte = recv(target, client_socket, "cannot get the requirment");
+    unsigned long long rbyte = recv(target, client_socket, "cannot get the requirment");
 
     string filename = get_content(target.filename, target.len);
     unsigned long long filesize = target.file_size;
@@ -146,7 +146,7 @@ void serve_chunk(SOCKET client_socket) {
     std::cout << "server chunk ok sent\n";
 
     start_chunk_transfer target;
-    int rbyte = recv(target, client_socket, "cannot get the requirment");
+    unsigned long long rbyte = recv(target, client_socket, "cannot get the requirment");
 
     string filename = get_content(target.filename, target.len);
     unsigned long long filesize = target.file_size;
@@ -190,13 +190,13 @@ void serve_chunk(SOCKET client_socket) {
         return;
     }
 
-    int cur = 0;
-    int need_send = length;
+    unsigned long long cur = 0;
+    unsigned long long need_send = length;
 
     data_message send_data;
 
     while (cur < need_send) {
-        int next = DATA_LEN;
+        unsigned long long next = DATA_LEN;
         if (cur + next > need_send) next = need_send - cur;
 
         send_data.len = next;
